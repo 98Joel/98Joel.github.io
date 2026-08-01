@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Key-Shifter: a tactile approach to musical transposition by Joel Ahereza.">
-    <meta property="og:title" content="Key-Shifter | Joel Ahereza">
-    <meta property="og:description" content="A tactile approach to musical transposition.">
+    <meta name="description" content="Play Along: a technical portfolio case study documenting an audio-practice workflow.">
+    <meta property="og:title" content="Play Along | Joel Ahereza">
+    <meta property="og:description" content="A technical case study in interface design, workflow documentation, and music practice tools.">
     <meta name="theme-color" content="#111513">
-    <title>Key-Shifter | Joel Ahereza</title>
+    <title>Play Along | Joel Ahereza</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -15,9 +15,10 @@
     <header class="site-header">
         <a class="wordmark" href="#top" aria-label="Joel Ahereza home">Joel Ahereza</a>
         <nav aria-label="Primary navigation">
-            <a href="#project">Project</a>
-            <a href="#process">Process</a>
-            <a href="#contact">Contact</a>
+            <a href="#project">Overview</a>
+            <a href="#demo">Mapping</a>
+            <a href="#process">Workflow</a>
+            <a href="#tutorial">Video</a>
         </nav>
         <a class="header-link" href="mailto:jahereza@ou.edu">Let's talk <span aria-hidden="true">&nearr;</span></a>
     </header>
@@ -25,17 +26,17 @@
     <main id="top">
         <section class="hero" aria-labelledby="hero-title">
             <div class="hero-copy">
-                <p class="eyebrow"><span class="pulse" aria-hidden="true"></span> Portfolio case study / 01</p>
-                <h1 id="hero-title">A new key,<br><em>without losing</em><br>your tempo.</h1>
-                <p class="hero-intro">Key-Shifter is a musical interface concept that makes transposition feel immediate, visible, and hands-on.</p>
+                <p class="eyebrow"><span class="pulse" aria-hidden="true"></span> Technical portfolio case study / 01</p>
+                <h1 id="hero-title">Play<br><em>Along.</em></h1>
+                <p class="hero-intro">A technical case study documenting an audio-practice workflow: a purpose-built interface working alongside stem extraction to make piano and bass parts easier to study.</p>
                 <div class="hero-actions">
-                    <a class="button button-primary" href="#demo">Try the live mapping <span aria-hidden="true">&darr;</span></a>
-                    <a class="text-link" href="#process">See the thinking <span aria-hidden="true">&searr;</span></a>
+                    <a class="button button-primary" href="#tutorial">View the tutorial plan <span aria-hidden="true">&darr;</span></a>
+                    <a class="text-link" href="#process">Follow the workflow <span aria-hidden="true">&searr;</span></a>
                 </div>
             </div>
 
             <div class="hero-visual hero-key-art" role="img" aria-label="A stylized piano keyboard showing a cyan target key after a transposition">
-                <span class="art-readout">C &rarr; F</span>
+                <span class="art-readout">WORKFLOW / 01</span>
                 <div class="art-keyboard" aria-hidden="true">
                     <span class="art-key">C</span><span class="art-key art-key-black">C#</span>
                     <span class="art-key">D</span><span class="art-key art-key-black">D#</span>
@@ -44,23 +45,23 @@
                     <span class="art-key art-key-black">G#</span><span class="art-key">A</span>
                     <span class="art-key art-key-black">A#</span><span class="art-key">B</span>
                 </div>
-                <div class="visual-caption"><span>Designed for clarity</span><span>01 / 03</span></div>
+                <div class="visual-caption"><span>Interface + process documentation</span><span>01 / 04</span></div>
             </div>
         </section>
 
         <section class="project-overview" id="project" aria-labelledby="project-title">
             <div class="section-label">
                 <span>01</span>
-                <span>Overview</span>
+                <span>Project framing</span>
             </div>
             <div class="overview-content">
-                <h2 id="project-title">Key-Shifter keeps the musical decision simple: <em>choose a direction, keep playing.</em></h2>
+                <h2 id="project-title">Not a product pitch. <em>A record of the technical decisions behind a usable practice workflow.</em></h2>
                 <div class="overview-details">
-                    <p>Changing keys should not interrupt a performance. This project explores a focused control surface for remapping notes while preserving a player's familiar physical relationship with the keyboard.</p>
+                    <p>Play Along is presented as evidence of technical thinking: defining a focused interaction, documenting how it fits into a larger audio workflow, and showing the path from a source track to a musician-ready practice experience.</p>
                     <dl class="project-facts">
-                        <div><dt>Focus</dt><dd>Interaction systems</dd></div>
-                        <div><dt>Medium</dt><dd>Instrument interface</dd></div>
-                        <div><dt>Approach</dt><dd>Prototype + iteration</dd></div>
+                        <div><dt>Focus</dt><dd>Workflow design</dd></div>
+                        <div><dt>Evidence</dt><dd>Guided screen recording</dd></div>
+                        <div><dt>Approach</dt><dd>Prototype + documentation</dd></div>
                     </dl>
                 </div>
             </div>
@@ -69,10 +70,10 @@
         <section class="demo-section" id="demo" aria-labelledby="demo-title">
             <div class="demo-heading">
                 <div>
-                    <p class="eyebrow">Interactive explainer</p>
-                    <h2 id="demo-title">Make the mapping tangible.</h2>
+                    <p class="eyebrow">Interactive system probe</p>
+                    <h2 id="demo-title">Inspect the core mapping.</h2>
                 </div>
-                <p>Choose a shift, then play the keyboard. The note labels and tone update together: an intentionally small experiment in immediate feedback.</p>
+                <p>Choose a shift, then test the keyboard. This live model gives a reviewer a quick way to inspect the central interaction rule before seeing it used in the full recorded workflow.</p>
             </div>
 
             <div class="instrument" id="instrument">
@@ -89,7 +90,7 @@
                         <button class="control-button" id="shift-down" type="button" aria-label="Lower the key by one semitone">&minus;</button>
                         <button class="control-button" id="shift-up" type="button" aria-label="Raise the key by one semitone">+</button>
                     </div>
-                    <button class="listen-button" id="play-pattern" type="button"><span class="listen-icon" aria-hidden="true">&#9654;</span> Hear a phrase</button>
+                    <button class="listen-button" id="play-pattern" type="button"><span class="listen-icon" aria-hidden="true">&#9654;</span> Test a note sequence</button>
                     <p class="keyboard-hint"><kbd>A</kbd>-<kbd>K</kbd> also play notes</p>
                 </div>
 
@@ -110,43 +111,70 @@
                         <button class="piano-key white-key" data-note="12" data-key="k" type="button" aria-label="Play C one octave higher"><span>C</span></button>
                     </div>
                 </div>
-                <p class="demo-status" id="demo-status" aria-live="polite">Ready to map a note.</p>
+                <p class="demo-status" id="demo-status" aria-live="polite">Ready to inspect the note mapping.</p>
             </div>
         </section>
 
         <section class="process-section" id="process" aria-labelledby="process-title">
             <div class="section-label section-label-light">
                 <span>02</span>
-                <span>Design principles</span>
+                <span>Workflow to document</span>
             </div>
             <div class="process-head">
-                <h2 id="process-title">Complex behavior,<br><em>calm interface.</em></h2>
-                <p>The strongest idea behind Key-Shifter is restraint: surface only the choices that matter in the moment, then make the system's response easy to understand.</p>
+                <h2 id="process-title">Show the handoffs,<br><em>not just the UI.</em></h2>
+                <p>The case study focuses on the full technical chain: source material, isolated musical part, Play Along interaction, and a recorded explanation of the choices between each step.</p>
             </div>
             <ol class="principles">
                 <li>
                     <span class="principle-number">01</span>
-                    <div><h3>Make state visible</h3><p>A clear before-and-after mapping removes guesswork. The user should always know where a note is going.</p></div>
+                    <div><h3>Begin with the musical part</h3><p>A separate source-separation program extracts the piano or bass from a track. The tutorial will start here so the audience can see why Play Along has a focused input to work with.</p></div>
                     <span class="principle-mark" aria-hidden="true">&nearr;</span>
                 </li>
                 <li>
                     <span class="principle-number">02</span>
-                    <div><h3>Favor physical intuition</h3><p>Controls follow the musician's mental model: lower, raise, play. The interaction asks for no translation layer.</p></div>
+                    <div><h3>Make the handoff explicit</h3><p>The screen recording will show what moves from extraction into Play Along, where the user makes a musical decision, and how the controls respond.</p></div>
                     <span class="principle-mark" aria-hidden="true">&nearr;</span>
                 </li>
                 <li>
                     <span class="principle-number">03</span>
-                    <div><h3>Close the feedback loop</h3><p>Labels, motion, and sound reinforce the same outcome, making experimentation feel low-risk and fast.</p></div>
+                    <div><h3>Use the recording as evidence</h3><p>Rather than claiming a capability in marketing copy, the walkthrough will let the reviewer watch the workflow, inspect the interface, and follow the result end to end.</p></div>
                     <span class="principle-mark" aria-hidden="true">&nearr;</span>
                 </li>
             </ol>
+        </section>
+
+        <section class="tutorial-section" id="tutorial" aria-labelledby="tutorial-title">
+            <div class="section-label">
+                <span>03</span>
+                <span>Walkthrough recording</span>
+            </div>
+            <div class="tutorial-content">
+                <div class="tutorial-copy">
+                    <h2 id="tutorial-title">The tutorial becomes the <em>proof of process.</em></h2>
+                    <p>When the screen recording is ready, it will sit here as the central artifact of the case study. The surrounding notes turn it into a quick, reviewable technical walkthrough rather than a product demo.</p>
+                    <ol class="tutorial-steps">
+                        <li><span>01</span><div><strong>Prepare the source</strong><p>Show the track and isolate the piano or bass part with the companion extraction tool.</p></div></li>
+                        <li><span>02</span><div><strong>Hand off to Play Along</strong><p>Explain the interface, the key-mapping choice, and the exact inputs a user controls.</p></div></li>
+                        <li><span>03</span><div><strong>Test the result</strong><p>Demonstrate the outcome and narrate what the workflow is designed to make easier.</p></div></li>
+                    </ol>
+                </div>
+                <!-- When the recording is ready, replace the empty value with its relative path, for example: assets/play-along-walkthrough.mp4 -->
+                <div class="tutorial-video" data-video-src="" aria-label="Play Along tutorial recording area">
+                    <div class="video-placeholder">
+                        <span class="video-label">Recording slot</span>
+                        <strong>Play Along: source track to practice session</strong>
+                        <p>Screen recording to be added.</p>
+                        <span class="video-timeline" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <section class="outcome-section" aria-labelledby="outcome-title">
             <div class="outcome-stamp" aria-hidden="true">KS<br><span>&nearr;</span></div>
             <div>
                 <p class="eyebrow">The takeaway</p>
-                <h2 id="outcome-title">A portfolio piece about translating a technical system into a clear human experience.</h2>
+                <h2 id="outcome-title">A technical case study that makes the decisions, dependencies, and user-facing result easy to inspect.</h2>
             </div>
         </section>
     </main>
@@ -209,6 +237,19 @@
                 status.textContent = `${noteAt(note)} input maps to ${noteAt(outputNote)} output.`;
             }
 
+            function loadTutorialVideo() {
+                const slot = document.querySelector('[data-video-src]');
+                const source = slot.dataset.videoSrc.trim();
+                if (!source) return;
+                const video = document.createElement('video');
+                video.controls = true;
+                video.preload = 'metadata';
+                video.src = source;
+                video.setAttribute('aria-label', 'Play Along tutorial recording');
+                slot.replaceChildren(video);
+                slot.classList.add('has-video');
+            }
+
             keyboard.addEventListener('click', (event) => {
                 const key = event.target.closest('.piano-key');
                 if (key) playNote(Number(key.dataset.note));
@@ -229,6 +270,7 @@
             });
 
             updateShift();
+            loadTutorialVideo();
         })();
     </script>
 </body>
