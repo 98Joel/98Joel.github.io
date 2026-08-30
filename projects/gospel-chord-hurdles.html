@@ -1,0 +1,1216 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gospel Chord Hurdles — Case Study | Joel Ahereza</title>
+    <meta name="description" content="Gospel Chord Hurdles is a C++/JUCE game where the only way past a hurdle is to play the gospel chord on it. A case study on real-time chord recognition, a synthesised backing band, and shipping a Windows installer with no installer toolchain.">
+    <meta name="theme-color" content="#0d1117">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Gospel Chord Hurdles — Case Study | Joel Ahereza">
+    <meta property="og:description" content="A game you play with a piano. Miss a chord and it does not end the run — it backs up and teaches you the notes.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- ?v= is a cache buster. Bump it after editing CSS/JS or browsers
+         (and GitHub Pages' CDN) will keep serving the old file. -->
+    <link rel="stylesheet" href="../assets/css/site.css?v=10">
+    <link rel="stylesheet" href="../assets/css/project.css?v=10">
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <a class="wordmark" href="../index.html">Joel Ahereza<span class="dot">.</span></a>
+            <nav class="site-nav" aria-label="Primary">
+                <a href="../index.html#work">Work</a>
+                <a href="../index.html#about">About</a>
+                <a href="play-along.html">PlayAlong</a>
+                <a href="gospel-chord-hurdles.html" aria-current="page">Chord Hurdles</a>
+            </nav>
+            <a class="header-cta" href="mailto:jahereza@ou.edu">Get in touch</a>
+        </div>
+    </header>
+
+    <p class="breadcrumb">
+        <a href="../index.html">Work</a><span class="sep">/</span>Gospel Chord Hurdles
+    </p>
+
+    <main id="main">
+
+        <!-- ===================================================== HERO ==== -->
+        <section class="case-hero">
+            <p class="eyebrow"><span class="pulse" aria-hidden="true"></span> Case study 02 &middot; Desktop game &middot; Real-time audio</p>
+            <h1>You cannot jump the hurdle until you <em>play the chord.</em></h1>
+            <p class="lede">
+                A runner is heading for a wall with a chord symbol painted on it. There
+                is no jump button &mdash; the only control is a piano. Play the right
+                notes in time and the wall opens. Miss it, and the game does not end
+                your run. It backs up, shows you the notes you needed, and waits until
+                you say you are ready.
+            </p>
+            <div class="case-actions">
+                <a class="btn btn-primary" href="#demo">Play a hurdle <span class="arrow" aria-hidden="true">&darr;</span></a>
+                <a class="btn btn-secondary" href="#matching">How it recognises a chord</a>
+                <a class="btn btn-secondary" href="#process">How it was built</a>
+            </div>
+
+            <dl class="spec-strip">
+                <div><dt>Role</dt><dd>Sole developer</dd></div>
+                <div><dt>Language</dt><dd>C++17</dd></div>
+                <div><dt>Framework</dt><dd>JUCE 8.0.14</dd></div>
+                <div><dt>Chord bank</dt><dd>204 voicings</dd></div>
+                <div><dt>Audio assets</dt><dd>None &mdash; all synthesised</dd></div>
+                <div><dt>Ships as</dt><dd>One 3.8&nbsp;MB setup</dd></div>
+            </dl>
+        </section>
+
+        <!-- ================================================== PROBLEM ==== -->
+        <section class="section" id="problem">
+            <div class="section-head">
+                <p class="section-label"><span>01</span><span>The problem</span></p>
+                <h2>Every musician knows the chord chart. <em>Almost nobody can play it in time.</em></h2>
+            </div>
+            <div class="split">
+                <div>
+                    <p class="lede" style="margin-bottom:22px">
+                        Gospel piano runs on a vocabulary that is written down everywhere and
+                        practised almost nowhere: 6/9 chords, thirteen-sus, rootless dominants,
+                        passing diminished. You can read what notes are in an A&flat;13sus in
+                        about four seconds. Getting your hands to find it, in tempo, without
+                        looking, takes months.
+                    </p>
+                    <p class="lede" style="margin:0">
+                        The gap is not knowledge. It is <strong>recall under time pressure</strong>
+                        &mdash; and that is a drilling problem, which is the one thing games are
+                        genuinely good at. So the chord chart became a lane of hurdles, and the
+                        only way through is to play.
+                    </p>
+                </div>
+                <ul class="note-list">
+                    <li>
+                        <span class="n">01</span>
+                        <div>
+                            <h3>The instrument has to be the controller</h3>
+                            <p>Not arrow keys with a chord displayed next to them. If you can clear a hurdle without your hands being in the right shape, the game has taught you nothing.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="n">02</span>
+                        <div>
+                            <h3>It has to accept how a real player voices a chord</h3>
+                            <p>Nobody plays a textbook root-position triad. The same chord gets played inverted, spread across two hands, with the root in the bass or missing entirely. All of that has to count as correct.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="n">03</span>
+                        <div>
+                            <h3>Failing has to be worth something</h3>
+                            <p>The moment you get a chord wrong is the moment you most need to be told what it was. A game-over screen throws that moment away.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="n">04</span>
+                        <div>
+                            <h3>Silence makes it a spelling test</h3>
+                            <p>Chord after chord with nothing behind it is a flashcard drill with extra steps. Practising musically means practising against a band.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ===================================================== DEMO ==== -->
+        <section class="dark-section" id="demo">
+            <div class="section-head">
+                <p class="section-label"><span>02</span><span>Playable</span></p>
+                <h2>Here is the actual game loop. <em>Go and miss one on purpose.</em></h2>
+                <p>
+                    Click the keys to hold notes, the way you would hold them on a piano.
+                    Press start, and a chord comes at you. The interesting part is what
+                    happens when you let one through &mdash; try it, because that reaction
+                    is the entire design of the project.
+                </p>
+            </div>
+
+            <div class="hurdle-game" id="hurdle-game">
+                <div class="hg-top">
+                    <div>
+                        <span class="mixer-mode-label">Practice section</span>
+                        <strong class="mixer-mode" id="hg-section-name">Triads</strong>
+                    </div>
+                    <div class="preset-row" role="group" aria-label="Practice section">
+                        <button class="preset" type="button" data-section="triads"   aria-pressed="true">Triads</button>
+                        <button class="preset" type="button" data-section="sevenths" aria-pressed="false">Sevenths</button>
+                        <button class="preset" type="button" data-section="ninths"   aria-pressed="false">6/9 &amp; 9ths</button>
+                    </div>
+                </div>
+
+                <div class="hg-lane">
+                    <canvas id="hg-canvas"></canvas>
+                    <div class="hg-overlay" id="hg-overlay" hidden>
+                        <span class="hg-teach-label">You missed this one &mdash; here it is</span>
+                        <h3 id="hg-teach-symbol">C</h3>
+                        <p class="family" id="hg-teach-family">major triad</p>
+                        <p class="tones" id="hg-teach-tones">C  E  G</p>
+                        <p style="margin:0">
+                            <button class="btn btn-primary" type="button" id="hg-ready">
+                                I&rsquo;m ready <span class="arrow" aria-hidden="true">&rarr;</span>
+                            </button>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="hg-readout">
+                    <span class="hg-symbol" id="hg-symbol">&mdash;</span>
+                    <span class="hg-family" id="hg-family">press start</span>
+                    <span class="hg-tones" id="hg-tones"></span>
+                    <span class="hg-progress" id="hg-progress">Start a run</span>
+                </div>
+
+                <div class="hg-chips" id="hg-chips" aria-hidden="true"></div>
+                <p class="hg-legend">
+                    <span><i class="sw-required" aria-hidden="true"></i> needed</span>
+                    <span><i class="sw-matched" aria-hidden="true"></i> needed &amp; held</span>
+                    <span><i class="sw-extra" aria-hidden="true"></i> held, not in the chord</span>
+                </p>
+
+                <div class="hg-keys" id="hg-keys" role="group" aria-label="On-screen keyboard — click a key to hold that note"></div>
+
+                <div class="transport">
+                    <button class="play-btn" type="button" id="hg-start" aria-pressed="false">
+                        <span class="glyph" aria-hidden="true">&#9654;</span>
+                        <span>Start a run</span>
+                    </button>
+                    <button class="preset" type="button" id="hg-check" hidden>Check my chord</button>
+                    <button class="preset" type="button" id="hg-clear">Release all notes</button>
+                    <p class="transport-note">Sound starts only when you click a key.<br>Held notes stay held until you click again.</p>
+                </div>
+
+                <p class="hg-stats" id="hg-stats">Score 0 &middot; Streak 0 &middot; Cleared 0 &middot; Reviews 0</p>
+                <p class="mixer-status" id="hg-status" aria-live="polite"></p>
+            </div>
+
+            <p class="disclaimer">
+                <span aria-hidden="true">&#9432;</span>
+                <span>
+                    <strong>Honest labelling:</strong> this is the shipped logic ported to
+                    JavaScript &mdash; the chord definitions, the pitch-class comparison, the
+                    98-pixel clear window, the scoring formula and the teaching pause are all
+                    the real values. Three things are deliberately different: clicking a key
+                    <em>latches</em> it, because a mouse has one finger; the demo stays in the
+                    friendly gospel keys where the real game uses all twelve; and the lane is
+                    scaled to fit your browser rather than a 1100-pixel window. The organ tone
+                    is the same three-harmonic recipe as the app's synth.
+                </span>
+            </p>
+        </section>
+
+        <!-- ============================================== KEY DECISION ==== -->
+        <section class="deep-section" id="teaching">
+            <div class="section-head">
+                <p class="section-label"><span>03</span><span>The decision that mattered</span></p>
+                <h2>Missing a chord is not a loss condition. <em>It is the lesson.</em></h2>
+                <p>
+                    The first version was an arcade game: hurdles came faster, you eventually
+                    failed, you started again. It worked. It was also useless, and one message
+                    from the person who had to practise on it deleted the entire premise.
+                </p>
+            </div>
+
+            <div class="pivot">
+                <div>
+                    <span class="pivot-clock">
+                        One message
+                        <b>Four decisions</b>
+                        1 July 2026
+                    </span>
+                </div>
+                <div>
+                    <blockquote>ok so this game is supposed to be more of learning than challenging/testing</blockquote>
+                    <p>
+                        That clause reclassified the project. A game that tests you optimises for
+                        difficulty curves and failure states. A game that teaches you optimises
+                        for the moment you get it wrong &mdash; which meant the failure state,
+                        the difficulty ramp, and the launch behaviour were all now wrong, and the
+                        same message said so.
+                    </p>
+                </div>
+            </div>
+
+            <div class="split" style="margin-bottom:36px">
+                <div>
+                    <h3 class="subhead">What the rest of that message changed</h3>
+                    <p style="margin:0 0 14px">
+                        <strong>"the cords should be in different sections"</strong> &mdash;
+                        difficulty stopped being a timer. There are now six sections &mdash; from
+                        plain triads up to rootless dominants and quartal stacks &mdash; plus an
+                        all-voicings mode for when you want the old behaviour, and <em>you</em>
+                        pick. The game no longer decides you are ready for thirteen-sus because
+                        you survived ninety seconds.
+                    </p>
+                    <p style="margin:0 0 14px">
+                        <strong>"the game should rewind a little bit, tell me the chord tones, ask me if I'm ready"</strong> &mdash;
+                        a third application state. Not playing, not stopped: paused mid-lane with
+                        the answer on screen and the same hurdle still standing there.
+                    </p>
+                    <p style="margin:0">
+                        <strong>"the game shouldn't start immediately I launch the file, that's weird"</strong> &mdash;
+                        a menu. Small change, and the one that most affects whether a first-time
+                        player feels ambushed.
+                    </p>
+                </div>
+                <div>
+                    <pre class="code"><span class="c">// Three states, because "paused" and "stopped"</span>
+<span class="c">// are not the same thing to a learner.</span>
+<span class="k">enum class</span> <span class="f">PracticeState</span>
+{
+    Menu,
+    Playing,
+    TeachingPause
+};
+
+<span class="c">// The hurdle you missed is not destroyed.</span>
+<span class="c">// It backs up and waits for you.</span>
+<span class="k">void</span> <span class="f">rewindForChord</span> (size_t hurdleIndex)
+{
+    <span class="k">auto</span> hurdle = hurdles[hurdleIndex];
+
+    hurdle.x      = runnerX() + <span class="k">170.0f</span>;
+    hurdle.judged = <span class="k">false</span>;
+
+    hurdles.clear();
+    hurdles.push_back (hurdle);
+
+    teachingChordIndex = hurdle.chordIndex;
+    practiceState      = PracticeState::TeachingPause;
+    accompaniment.setRunning (<span class="k">false</span>);
+}</pre>
+                    <span class="code-cap">Source/Main.cpp</span>
+                </div>
+            </div>
+
+            <ul class="note-list">
+                <li>
+                    <span class="n">01</span>
+                    <div>
+                        <h3>There is no score penalty for missing</h3>
+                        <p>The counter is labelled <em>Reviews</em>, not <em>Mistakes</em>. Points are only ever added. The only thing a miss costs you is your streak bonus and the seconds you spend reading the answer &mdash; which is the part you actually wanted.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="n">02</span>
+                    <div>
+                        <h3>The band stops when the teaching card appears</h3>
+                        <p>One line: <code>accompaniment.setRunning(false)</code>. A drum loop under an explanation is noise, and the silence is what makes the pause read as "read this" rather than "you lost".</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="n">03</span>
+                    <div>
+                        <h3>You get the same chord back, not a new one</h3>
+                        <p>The missed hurdle is the only one left on screen. The lane is cleared and it is re-placed just ahead of the runner, so the first thing you do after being told the answer is play it.</p>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- ================================================ MATCHING ===== -->
+        <section class="dark-section" id="matching">
+            <div class="section-head">
+                <p class="section-label"><span>04</span><span>How it recognises a chord</span></p>
+                <h2>Five steps between <em>your fingers and the verdict.</em></h2>
+                <p>Click through. The code shown is the real implementation, lightly trimmed for width.</p>
+            </div>
+
+            <div class="pipeline">
+                <div class="pipe-tabs" role="tablist" aria-label="Chord recognition steps">
+                    <button class="pipe-tab" role="tab" id="tab-1" aria-controls="panel-1" aria-selected="true">
+                        <span class="num">01</span><span class="label">Collect</span>
+                    </button>
+                    <button class="pipe-tab" role="tab" id="tab-2" aria-controls="panel-2" aria-selected="false">
+                        <span class="num">02</span><span class="label">Fold to 12</span>
+                    </button>
+                    <button class="pipe-tab" role="tab" id="tab-3" aria-controls="panel-3" aria-selected="false">
+                        <span class="num">03</span><span class="label">Judge</span>
+                    </button>
+                    <button class="pipe-tab" role="tab" id="tab-4" aria-controls="panel-4" aria-selected="false">
+                        <span class="num">04</span><span class="label">Time it</span>
+                    </button>
+                    <button class="pipe-tab" role="tab" id="tab-5" aria-controls="panel-5" aria-selected="false">
+                        <span class="num">05</span><span class="label">Score or teach</span>
+                    </button>
+                </div>
+
+                <div>
+                    <div class="pipe-panel" role="tabpanel" id="panel-1" aria-labelledby="tab-1" tabindex="0">
+                        <h3>Three input devices, one source of truth</h3>
+                        <p>
+                            A note can arrive from a USB piano, from clicking the on-screen keyboard,
+                            or from the computer keyboard's piano layout. Rather than handle three
+                            cases, all three are funnelled into JUCE's <code>MidiKeyboardState</code>,
+                            and the game listens to that one object. Adding a fourth input later
+                            costs nothing.
+                        </p>
+                        <pre class="code"><span class="c">// A plain 128-slot table: is this MIDI note down right now?</span>
+std::array&lt;<span class="k">bool</span>, <span class="k">128</span>&gt; activeNotes {};
+
+<span class="k">void</span> <span class="f">handleNoteOn</span> (juce::MidiKeyboardState*, <span class="k">int</span>, <span class="k">int</span> midiNoteNumber, <span class="k">float</span>) <span class="k">override</span>
+{
+    <span class="k">const</span> juce::ScopedLock lock (activeNoteLock);
+
+    <span class="k">if</span> (juce::isPositiveAndBelow (midiNoteNumber, (<span class="k">int</span>) activeNotes.size()))
+        activeNotes[(size_t) midiNoteNumber] = <span class="k">true</span>;
+}</pre>
+                        <span class="code-cap">Source/Main.cpp</span>
+                    </div>
+
+                    <div class="pipe-panel" role="tabpanel" id="panel-2" aria-labelledby="tab-2" tabindex="0" hidden>
+                        <h3>128 keys collapse into 12 names</h3>
+                        <p>
+                            This one line is why the game feels fair. A piano has 128 MIDI notes, but
+                            music only has twelve note <em>names</em> &mdash; every C is a C. Taking
+                            the remainder after dividing by twelve throws away which octave you
+                            played in and keeps only what you played. The result: inversions count,
+                            two-handed voicings count, doubling the root three times counts. The
+                            matcher never learns the difference, because there is no difference
+                            worth learning.
+                        </p>
+                        <pre class="code">std::array&lt;<span class="k">bool</span>, <span class="k">12</span>&gt; <span class="f">pitchClassesForNotes</span> (<span class="k">const</span> std::array&lt;<span class="k">bool</span>, <span class="k">128</span>&gt;&amp; notes) <span class="k">const</span>
+{
+    std::array&lt;<span class="k">bool</span>, <span class="k">12</span>&gt; held {};
+
+    <span class="k">for</span> (<span class="k">auto</span> note = <span class="k">0</span>; note &lt; (<span class="k">int</span>) notes.size(); ++note)
+        <span class="k">if</span> (notes[(size_t) note])
+            held[(size_t) (note <span class="k">% 12</span>)] = <span class="k">true</span>;   <span class="c">// every C is a C</span>
+
+    <span class="k">return</span> held;
+}</pre>
+                        <span class="code-cap">Source/Main.cpp</span>
+                    </div>
+
+                    <div class="pipe-panel" role="tabpanel" id="panel-3" aria-labelledby="tab-3" tabindex="0" hidden>
+                        <h3>Nothing missing, and not too much extra</h3>
+                        <p>
+                            A chord is stored as twelve booleans, so comparing is just counting three
+                            things: tones the chord needs that you are not holding, tones you are
+                            holding that the chord does not want, and the total. Every required note
+                            must be present &mdash; there is no partial credit. Extra notes are
+                            allowed only up to a budget that each chord carries with it, which is the
+                            subject of the next section.
+                        </p>
+                        <pre class="code"><span class="k">bool</span> <span class="f">isChordMatch</span> (<span class="k">const</span> ChordSpec&amp; chord, <span class="k">const</span> std::array&lt;<span class="k">bool</span>, <span class="k">12</span>&gt;&amp; held)
+{
+    <span class="k">auto</span> missing = <span class="k">0</span>, extras = <span class="k">0</span>, heldCount = <span class="k">0</span>;
+
+    <span class="k">for</span> (<span class="k">auto</span> pc = <span class="k">0</span>; pc &lt; <span class="k">12</span>; ++pc)
+    {
+        <span class="k">const auto</span> required = chord.pitchClasses[(size_t) pc];
+        <span class="k">const auto</span> isHeld   = held[(size_t) pc];
+
+        <span class="k">if</span> (isHeld)               ++heldCount;
+        <span class="k">if</span> (required &amp;&amp; ! isHeld) ++missing;
+        <span class="k">if</span> (! required &amp;&amp; isHeld) ++extras;
+    }
+
+    <span class="k">return</span> missing == <span class="k">0</span>
+        &amp;&amp; heldCount &gt;= countPitchClasses (chord.pitchClasses)
+        &amp;&amp; extras &lt;= chord.extraAllowance;
+}</pre>
+                        <span class="code-cap">Source/Main.cpp</span>
+                    </div>
+
+                    <div class="pipe-panel" role="tabpanel" id="panel-4" aria-labelledby="tab-4" tabindex="0" hidden>
+                        <h3>Right notes, wrong moment, still a miss</h3>
+                        <p>
+                            Correctness is only half of it &mdash; this is a rhythm game as much as a
+                            theory one. The check only runs while the hurdle's centre is inside a
+                            window 98 pixels either side of the runner &mdash; a little under two
+                            seconds at starting speed, and less as the lane speeds up. Hold the
+                            chord early and keep holding it and you will clear; stab at it late and
+                            the hurdle is already past you.
+                        </p>
+                        <pre class="code"><span class="k">const auto</span> hurdleCenter = hurdle.x + hurdle.width * <span class="k">0.5f</span>;
+<span class="k">const auto</span> inClearZone  = std::abs (hurdleCenter - clearX) &lt;= currentClearWindow();
+
+<span class="k">if</span> (! hurdle.judged &amp;&amp; inClearZone &amp;&amp; isChordMatch (chord, held))
+{
+    hurdle.judged  = <span class="k">true</span>;
+    hurdle.cleared = <span class="k">true</span>;
+    ++clearedHurdles;
+    ++streak;
+    score += <span class="k">60</span> + countPitchClasses (chord.pitchClasses) * <span class="k">15</span> + streak * <span class="k">5</span>;
+}</pre>
+                        <span class="code-cap">Source/Main.cpp</span>
+                    </div>
+
+                    <div class="pipe-panel" role="tabpanel" id="panel-5" aria-labelledby="tab-5" tabindex="0" hidden>
+                        <h3>Harder chords are worth more, on purpose</h3>
+                        <p>
+                            The score formula pays you for the number of distinct tones in the chord,
+                            so a five-note 6/9 is worth more than a three-note triad, plus a streak
+                            bonus that grows the longer you stay clean. If instead the hurdle runs
+                            off the left edge unjudged, the game hands off to
+                            <code>rewindForChord()</code> and the teaching pause takes over &mdash;
+                            no life lost, no points deducted, streak reset to zero.
+                        </p>
+                        <pre class="code"><span class="c">// The hurdle has passed the runner without being judged.</span>
+<span class="k">if</span> (! hurdle.judged &amp;&amp; hurdle.x + hurdle.width &lt; clearX - <span class="k">18.0f</span>)
+{
+    rewindForChord (i);
+    <span class="k">return</span>;
+}</pre>
+                        <span class="code-cap">Source/Main.cpp</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================ DECISIONS ==== -->
+        <section class="section" id="decisions">
+            <div class="section-head">
+                <p class="section-label"><span>05</span><span>Engineering decisions</span></p>
+                <h2>Six choices, and <em>what each one bought.</em></h2>
+                <p>Anyone can list a stack. These are the trade-offs I would defend in a review.</p>
+            </div>
+
+            <div class="decisions">
+                <div class="decision">
+                    <div>
+                        <span class="tag">Musical correctness</span>
+                        <h3>Chords are compared as pitch classes, never as notes</h3>
+                    </div>
+                    <p>
+                        <span class="why">Every chord is twelve booleans, and the comparison is a count, not a lookup.</span>
+                        The alternative &mdash; storing chords as note numbers &mdash; would require
+                        enumerating every inversion, every octave and every two-handed spread of all
+                        204 voicings, and it would still reject something a real pianist plays.
+                        Folding to twelve makes the whole class of "that was right and it said no"
+                        bugs impossible rather than merely rare.
+                    </p>
+                </div>
+
+                <div class="decision">
+                    <div>
+                        <span class="tag">Fairness</span>
+                        <h3>Every chord carries its own tolerance for wrong notes</h3>
+                    </div>
+                    <p>
+                        <span class="why">Triads, sevenths, sus and diminished chords allow no extra notes at all; every extended, altered, rootless and quartal voicing allows exactly one.</span>
+                        Without a budget you can clear any hurdle by holding down the entire
+                        keyboard, which technically contains every chord. Without <em>some</em>
+                        tolerance, a five-note 6/9 played with one added colour tone &mdash; which is
+                        how gospel players actually voice it &mdash; gets marked wrong. The
+                        allowance is a per-chord field, so tuning fairness never means touching the
+                        matcher.
+                    </p>
+                </div>
+
+                <div class="decision">
+                    <div>
+                        <span class="tag">Real-time audio</span>
+                        <h3>The game and the audio thread share state through atomics</h3>
+                    </div>
+                    <p>
+                        <span class="why">Root, bass note and chord mask are <code>std::atomic</code>, written by the game and read inside the audio callback.</span>
+                        The audio callback runs on a deadline measured in milliseconds; if it waits
+                        on anything, the speakers click. Publishing the harmony as three atomic
+                        values means the band picks up your chord change at the next step without
+                        the two threads ever blocking each other &mdash; and a transport reset is
+                        requested with a single <code>exchange</code> rather than a message queue.
+                    </p>
+                </div>
+
+                <div class="decision">
+                    <div>
+                        <span class="tag">Footprint</span>
+                        <h3>The backing band is generated, not recorded</h3>
+                    </div>
+                    <p>
+                        <span class="why">Zero audio files ship with the game. Kick, snare, hi-hat, bass, pad and organ are all built from oscillators and noise at runtime.</span>
+                        A sampled band means licensing every loop, shipping tens of megabytes, and
+                        being locked to whatever keys and tempos were recorded. A synthesised one
+                        follows your chord into any of the twelve keys for free, and the entire
+                        installer stays under four megabytes. The trade is honest: it sounds like a
+                        drum machine, not like a church.
+                    </p>
+                </div>
+
+                <div class="decision">
+                    <div>
+                        <span class="tag">Scope</span>
+                        <h3>One source file, and a clear point at which that stops being right</h3>
+                    </div>
+                    <p>
+                        <span class="why">The entire application is 1,819 lines of <code>Source/Main.cpp</code> — synth, band, chord bank, game loop, rendering and UI.</span>
+                        For a project this size that is a feature: no headers to keep in sync, no
+                        build graph, and the whole thing readable in one pass. It is also the first
+                        thing I would undo. The chord bank and the accompaniment engine are already
+                        independent of the game loop and want to be their own translation units the
+                        moment a second screen or a test suite exists &mdash; and the absence of
+                        tests is a direct consequence of never having split them out.
+                    </p>
+                </div>
+
+                <div class="decision">
+                    <div>
+                        <span class="tag">Trust</span>
+                        <h3>The installer never asks for administrator rights</h3>
+                    </div>
+                    <p>
+                        <span class="why">It installs to <code>%LOCALAPPDATA%\Programs</code>, writes its uninstall entry under <code>HKCU</code>, and touches nothing machine-wide.</span>
+                        A per-user install runs on a locked-down laptop, needs no password prompt,
+                        and can be completely removed by one uninstaller that deletes its own
+                        directory. Asking a musician for admin rights to try a practice game is a
+                        good way to have them not try it.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================== BAND ==== -->
+        <section class="deep-section" id="band">
+            <div class="section-head">
+                <p class="section-label"><span>06</span><span>The band</span></p>
+                <h2>A full band, in about 300 lines, <em>and no audio files at all.</em></h2>
+                <p>
+                    This started as a complaint &mdash; playing chord after chord in silence was
+                    boring &mdash; and turned into the most interesting code in the project. The
+                    reference was the auto-accompaniment on a Yamaha arranger keyboard: you hold
+                    a chord, and a band plays that chord back at you in a style you picked.
+                </p>
+            </div>
+
+            <div class="band-panel" id="band-engine">
+                <div class="band-controls">
+                    <div class="band-control-row">
+                        <span class="band-control-label">Style</span>
+                        <div class="preset-row" role="group" aria-label="Accompaniment style">
+                            <button class="preset" type="button" data-style="0" aria-pressed="true">Slow 6/8</button>
+                            <button class="preset" type="button" data-style="1" aria-pressed="false">Worship Pad</button>
+                            <button class="preset" type="button" data-style="2" aria-pressed="false">Shout</button>
+                            <button class="preset" type="button" data-style="3" aria-pressed="false">Neo Soul</button>
+                        </div>
+                    </div>
+                    <div class="band-control-row">
+                        <span class="band-control-label">Chord</span>
+                        <div class="preset-row" role="group" aria-label="Chord the band follows">
+                            <button class="preset" type="button" data-chord="0" aria-pressed="true">Cmaj7</button>
+                            <button class="preset" type="button" data-chord="1" aria-pressed="false">Fm9</button>
+                            <button class="preset" type="button" data-chord="2" aria-pressed="false">A&flat;6/9</button>
+                            <button class="preset" type="button" data-chord="3" aria-pressed="false">B&flat;13sus</button>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="band-meta" id="band-tempo">72 BPM &middot; 12 steps per bar &middot; 3 per beat</p>
+                <div class="band-grid" id="band-grid"></div>
+                <div class="band-voicing" id="band-voicing"></div>
+
+                <div class="transport" style="padding-top:0">
+                    <button class="play-btn" type="button" id="band-play" aria-pressed="false">
+                        <span class="glyph" aria-hidden="true">&#9654;</span>
+                        <span id="band-play-label">Hear the band</span>
+                    </button>
+                    <p class="transport-note">Switch style or chord while it plays.<br>Audio starts only on a click.</p>
+                </div>
+
+                <p class="mixer-status" id="band-status">The grid above is the real pattern table. Press play to hear it.</p>
+            </div>
+
+            <p class="disclaimer" style="margin-bottom:40px">
+                <span aria-hidden="true">&#9432;</span>
+                <span>
+                    <strong>Honest labelling:</strong> the four styles, their tempos, the on/off
+                    pattern for all six parts and the register windows each part is confined to are
+                    read straight out of the C++. The synthesis is the browser's oscillators rather
+                    than the app's, so the timbre is close but not identical. In the game you do
+                    not pick the chord from a list &mdash; the band reads it off your hands.
+                </span>
+            </p>
+
+            <div class="split split-narrow">
+                <div>
+                    <pre class="code"><span class="c">// Four styles. Everything the band does is</span>
+<span class="c">// derived from this table plus six predicates.</span>
+<span class="k">static constexpr</span> std::array&lt;StyleDefinition, <span class="k">4</span>&gt; styles {{
+ <span class="c">// name           bpm  /beat /bar  drum  bass  pad  organ</span>
+  { <span class="s">"Slow 6/8"</span>,     <span class="k">72</span>,  <span class="k">3</span>,   <span class="k">12</span>,  <span class="k">.58f</span>, <span class="k">.34f</span>, <span class="k">.20f</span>, <span class="k">.14f</span> },
+  { <span class="s">"Worship Pad"</span>,  <span class="k">76</span>,  <span class="k">4</span>,   <span class="k">16</span>,  <span class="k">.30f</span>, <span class="k">.22f</span>, <span class="k">.28f</span>, <span class="k">.08f</span> },
+  { <span class="s">"Shout"</span>,       <span class="k">138</span>,  <span class="k">4</span>,   <span class="k">16</span>,  <span class="k">.68f</span>, <span class="k">.36f</span>, <span class="k">.12f</span>, <span class="k">.20f</span> },
+  { <span class="s">"Neo Soul"</span>,     <span class="k">92</span>,  <span class="k">4</span>,   <span class="k">16</span>,  <span class="k">.48f</span>, <span class="k">.30f</span>, <span class="k">.22f</span>, <span class="k">.16f</span> }
+}};
+
+<span class="c">// Shout puts the kick on 1, the "and" of 1, 3 and the</span>
+<span class="c">// last sixteenth — the push that makes a shout feel urgent.</span>
+<span class="k">bool</span> <span class="f">shouldTriggerKick</span> (<span class="k">int</span> style, <span class="k">int</span> step) <span class="k">const</span>
+{
+    <span class="k">if</span> (style == <span class="k">0</span>) <span class="k">return</span> step == <span class="k">0</span> || step == <span class="k">6</span>;
+    <span class="k">if</span> (style == <span class="k">1</span>) <span class="k">return</span> step == <span class="k">0</span> || step == <span class="k">10</span>;
+    <span class="k">if</span> (style == <span class="k">2</span>) <span class="k">return</span> step == <span class="k">0</span> || step == <span class="k">3</span> || step == <span class="k">8</span> || step == <span class="k">14</span>;
+
+    <span class="k">return</span> step == <span class="k">0</span> || step == <span class="k">7</span> || step == <span class="k">10</span>;
+}</pre>
+                    <span class="code-cap">Source/Main.cpp &mdash; AccompanimentEngine</span>
+                </div>
+                <div>
+                    <h3 class="subhead">The band follows your left hand, not the game</h3>
+                    <p style="margin:0 0 14px">
+                        Sixty times a second the game takes whatever notes you are currently
+                        holding and asks which of the 204 chords in the bank they most resemble.
+                        This is a scoring problem rather than a lookup: matched tones add, missing
+                        and extra tones subtract, and holding the chord's root or putting it in the
+                        bass each earn a small bonus. That is how the band tracks you through a
+                        half-played voicing instead of dropping out until you get it exactly right.
+                    </p>
+                    <p style="margin:0 0 14px">
+                        The <strong>lowest note you are holding</strong>
+                        becomes the bass, independently of the chord name &mdash; so playing a C
+                        major triad over an A in the bass gets you a band playing C/A, exactly as an
+                        arranger keyboard would. If you are not holding anything, it falls back to
+                        the chord on the approaching hurdle, so the music never stops making sense.
+                    </p>
+                    <p style="margin:0">
+                        Each part is then confined to its own register: the bass is folded down
+                        below MIDI note 49, the pad lives between 55 and 78, the organ between 60
+                        and 82. That is the whole arrangement engine &mdash; no voice-leading
+                        model, just three windows that stop the parts from colliding.
+                    </p>
+                </div>
+            </div>
+
+            <pre class="code" style="margin-top:26px"><span class="c">// Walk up from the root; put each chord tone into this part's register.</span>
+<span class="k">for</span> (<span class="k">auto</span> interval = <span class="k">0</span>; interval &lt; <span class="k">12</span> &amp;&amp; count &lt; (<span class="k">int</span>) notes.size(); ++interval)
+{
+    <span class="k">const auto</span> pc = root + interval;
+
+    <span class="k">if</span> (! maskContainsPitchClass (mask, pc))
+        <span class="k">continue</span>;
+
+    <span class="k">auto</span> note = midiNoteAtOrAbove (pc, lowNote);
+
+    <span class="k">while</span> (note &gt; highNote) note -= <span class="k">12</span>;   <span class="c">// too high? drop an octave</span>
+    <span class="k">while</span> (note &lt; lowNote)  note += <span class="k">12</span>;   <span class="c">// too low? raise one</span>
+
+    <span class="k">if</span> (note &lt;= highNote)
+        notes[(size_t) count++] = note;
+}
+
+<span class="k">if</span> (count &lt; <span class="k">3</span>)                                  <span class="c">// a rootless or quartal voicing left</span>
+{                                                 <span class="c">// the window nearly empty — fall back</span>
+    <span class="k">const auto</span> fallback = maskFromIntervals (root, { <span class="k">0</span>, <span class="k">4</span>, <span class="k">7</span> });   <span class="c">// to a plain triad</span>
+    <span class="c">// ...</span>
+}</pre>
+            <span class="code-cap">Source/Main.cpp &mdash; AccompanimentEngine::triggerVoicing</span>
+        </section>
+
+        <!-- ================================================ SHIPPING ===== -->
+        <section class="section" id="shipping">
+            <div class="section-head">
+                <p class="section-label"><span>07</span><span>Shipping it</span></p>
+                <h2>Getting it onto <em>somebody else's laptop.</em></h2>
+                <p>
+                    A game that only runs on the machine that compiled it is a hobby. The brief
+                    was one file you can email to a friend. Windows makes this harder than it
+                    sounds when none of the usual installer tools are on the machine.
+                </p>
+            </div>
+
+            <div class="split" style="margin-bottom:34px">
+                <ul class="note-list">
+                    <li>
+                        <span class="n">01</span>
+                        <div>
+                            <h3>CPack, then NSIS, then Inno, then WiX &mdash; none installed</h3>
+                            <p>CMake can drive all of them and had none of them to drive. Installing a whole packaging toolchain to ship a four-megabyte game felt like the wrong direction.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="n">02</span>
+                        <div>
+                            <h3>IExpress is built into Windows, and it did not work</h3>
+                            <p>Windows' own self-extractor got as far as writing its intermediate cabinet-file recipe and then failed silently with exit code 1. The recipe named an empty output directory, which <code>makecab</code> refuses. Two attempts to steer it from the config file changed nothing.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="n">03</span>
+                        <div>
+                            <h3>The answer was to stop looking for a tool and write one</h3>
+                            <p>The setup file is now a 160-line C# program with the payload zip embedded as a resource, compiled by the .NET Framework compiler that ships with Windows. It extracts to a temp folder, runs the install script, and deletes the folder on the way out.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="n">04</span>
+                        <div>
+                            <h3>The runtime DLLs travel with it</h3>
+                            <p>The release build links the MSVC runtime dynamically, so the packager copies the matching redistributable DLLs into the payload. Without that, the game fails to start on a clean laptop with an error naming a file nobody has heard of.</p>
+                        </div>
+                    </li>
+                </ul>
+                <div>
+                    <pre class="code"><span class="c">// Never trust a path that came out of a zip file.</span>
+<span class="k">var</span> destinationRoot = Path.GetFullPath(destinationDir);
+<span class="k">var</span> destinationPath = Path.GetFullPath(
+    Path.Combine(destinationDir, entry.FullName));
+
+<span class="k">if</span> (!destinationPath.StartsWith(destinationRoot,
+        StringComparison.OrdinalIgnoreCase))
+    <span class="k">throw new</span> InvalidOperationException(
+        <span class="s">"Installer payload contains an unsafe path."</span>);</pre>
+                    <span class="code-cap">packaging/SetupBootstrapper.cs</span>
+                    <p style="margin:20px 0 0;font-size:14.5px;line-height:1.7;color:var(--text-muted)">
+                        A zip entry is allowed to be called <code>..\..\Windows\System32\something.dll</code>.
+                        Extracting archives without checking where each entry lands is how the
+                        classic path-traversal bug gets shipped, so the bootstrapper resolves every
+                        destination to a full path and refuses anything that escapes the folder it
+                        was given &mdash; even though it only ever unpacks its own payload.
+                    </p>
+                </div>
+            </div>
+
+            <div class="decisions">
+                <div class="decision">
+                    <div>
+                        <span class="tag">Verification</span>
+                        <h3>The installer has a quiet mode so it can be tested for real</h3>
+                    </div>
+                    <p>
+                        <span class="why">Passing <code>/quiet</code> suppresses the finished dialog, which is what makes an automated install-then-uninstall test possible at all.</span>
+                        The setup was then actually run: install, confirm the executable, both
+                        shortcuts, the uninstall script and the registry entry all exist, then run
+                        the uninstaller and confirm the directory and the registry key are gone.
+                        The first attempt at that test reported failure because PowerShell does not
+                        wait for a GUI-subsystem process &mdash; the checks ran before the installer
+                        had finished.
+                    </p>
+                </div>
+
+                <div class="decision">
+                    <div>
+                        <span class="tag">Clean removal</span>
+                        <h3>The uninstaller deletes the folder it is running from</h3>
+                    </div>
+                    <p>
+                        <span class="why">A script cannot remove its own directory while Windows has it open, so it writes a tiny cleanup script to <code>%TEMP%</code>, launches it detached, and exits.</span>
+                        The cleanup sleeps for a second, removes the install folder, then removes
+                        itself. It is a small trick, and it is the difference between a clean
+                        uninstall and leaving an empty folder plus a dead Start Menu entry behind
+                        on someone else's computer.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================ BUILD LOG ==== -->
+        <section class="section" id="build-log">
+            <div class="section-head">
+                <p class="section-label"><span>08</span><span>Build log</span></p>
+                <h2>Gameplay, recordings, <em>and things that broke.</em></h2>
+                <p>
+                    Screen recordings of the game running on a real MIDI keyboard, plus footage
+                    from the build. Slots below are reserved and fill in as recordings are added.
+                </p>
+            </div>
+            <div class="media-grid" id="build-log-grid"></div>
+        </section>
+
+        <!-- ============================================ LIMITATIONS ====== -->
+        <section class="section" id="limitations">
+            <div class="section-head">
+                <p class="section-label"><span>09</span><span>Honest limitations</span></p>
+                <h2>What it does not do <em>yet.</em></h2>
+                <p>Every one of these is a known trade-off rather than an oversight.</p>
+            </div>
+            <div class="split">
+                <ul class="note-list">
+                    <li>
+                        <span class="n">01</span>
+                        <div>
+                            <h3>The original ambition &mdash; hearing chords in a recording &mdash; was cut</h3>
+                            <p>This began as a question about detecting chords, inversions included, from a finished song. That is an open research problem, it needs a labelled dataset I do not have, and it would have been the entire project. Recognising chords from MIDI, where the notes are already known exactly, is a different and completely tractable problem &mdash; so the game plays MIDI.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="n">02</span>
+                        <div>
+                            <h3>The audio thread takes a lock</h3>
+                            <p>The held-note table is guarded by a mutex, and note events are delivered while the audio callback is running. It has never audibly glitched, because the critical section is a single array write and nothing else contends for it &mdash; but taking any lock on an audio thread is a rule this breaks knowingly. A lock-free bitmask of two 64-bit atomics would remove the argument entirely.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="n">03</span>
+                        <div>
+                            <h3>It opens the first MIDI device it finds and never looks again</h3>
+                            <p>No device picker, no hot-plug handling. Plug your keyboard in after launching and you have to restart the game. With one keyboard on the desk this is invisible; with two it is the first thing you would complain about.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="n">04</span>
+                        <div>
+                            <h3>There are no automated tests</h3>
+                            <p>The chord matcher is pure, deterministic and about twenty lines &mdash; it is the easiest thing in the project to test, and it is untested, because the whole application is one file with no build target to link a test runner against. That is the concrete cost of the single-file decision, and it is why splitting the chord bank out is first on the list.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="n">05</span>
+                        <div>
+                            <h3>Windows only, and the installer is unsigned</h3>
+                            <p>JUCE is cross-platform and the game code has nothing Windows-specific in it, but the packaging is entirely PowerShell and the .NET Framework compiler. Because the setup file is not code-signed, Windows SmartScreen warns the first person who runs it &mdash; which is exactly the moment you least want a scary dialog.</p>
+                        </div>
+                    </li>
+                </ul>
+                <div class="doc-block">
+                    <h3>Where it goes next</h3>
+                    <p>
+                        Splitting the chord bank and the accompaniment engine into their own
+                        translation units, then putting the matcher under test &mdash; that unlocks
+                        everything else and costs an afternoon.
+                    </p>
+                    <p>
+                        After that, the feature I actually want is a record of which chords you keep
+                        missing. The game already counts reviews; it throws away <em>which</em>
+                        chord each one was. Keeping that turns a practice game into a practice
+                        plan, and it is maybe thirty lines plus a settings file.
+                    </p>
+                    <p style="margin-bottom:0">
+                        Longer term, the honest upgrade to the band is velocity and swing. Every
+                        hit currently lands dead on the grid at a fixed level, which is exactly why
+                        it reads as a drum machine. Neither is hard; both are the difference
+                        between something you tolerate and something you would practise to.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================================================== DOCS ===== -->
+        <section class="dark-section" id="process">
+            <div class="section-head">
+                <p class="section-label"><span>10</span><span>How this was built</span></p>
+                <h2>The brief fit in one sentence. <em>Then it changed twice.</em></h2>
+                <p>
+                    Gospel Chord Hurdles was built with an AI coding agent across four sessions
+                    between 30 June and 6 July 2026. I set the problem, made the product calls,
+                    and said when the thing I had been handed was the wrong thing; the agent wrote
+                    the implementation and ran the builds. Every quote below is verbatim from the
+                    session logs, which are linked at the end &mdash; typos included.
+                </p>
+            </div>
+
+            <ol class="timeline">
+                <li class="tl-item">
+                    <div class="tl-meta"><span class="tl-num">01</span><span class="tl-time">Session 1 &middot; 30 Jun</span></div>
+                    <div>
+                        <p class="tl-quote">design a game using C++ and juce that has hurdles only passed by playing gospel chords with increasing difficulty</p>
+                        <p class="tl-effect">
+                            <b>The entire specification, in one sentence.</b> Genre, language,
+                            framework, win condition and progression, with nothing left over.
+                            "Only passed by playing" is the load-bearing phrase: it rules out a
+                            jump button, a skip, and any way through that does not involve your
+                            hands being right. The finished game does not do anything that is not
+                            in that line.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="tl-item">
+                    <div class="tl-meta"><span class="tl-num">02</span><span class="tl-time">Session 2 &middot; 1 Jul</span></div>
+                    <div>
+                        <p class="tl-quote">do you think we can add like some tracks to play along to because right now it seems very boring to just play chord after chord with nothing in the background. what would that take?</p>
+                        <p class="tl-effect">
+                            <b>Boredom reported as a defect.</b> The build was working exactly as
+                            specified and was no fun, which is a real bug in a practice tool: an
+                            app you do not open teaches you nothing. The proposals came back as a
+                            ladder &mdash; looping audio, then tempo-aware prompts, then stems,
+                            then a generated band &mdash; and the cheapest rungs were skipped
+                            because of what happened next.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="tl-item">
+                    <div class="tl-meta"><span class="tl-num">03</span><span class="tl-time">Session 2 &middot; 1 Jul</span></div>
+                    <div>
+                        <p class="tl-quote">so you know how in some yamaha keyboards, they have this function where it plays a track and a full band with a progression that is dictated by notes you play, mostly in the bass. you know about that?</p>
+                        <p class="tl-effect">
+                            <b>Naming the reference replaced a design discussion.</b> "Backing
+                            track" and "auto-accompaniment that follows your left hand" sound
+                            similar and are completely different builds &mdash; one is a file you
+                            play, the other is a band that listens. Pointing at a machine that has
+                            done this since the 1980s settled the architecture in one message:
+                            detect the chord, detect the bass note, drive a step sequencer from
+                            both. That is <a href="#band">section 06</a>.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="tl-item">
+                    <div class="tl-meta"><span class="tl-num">04</span><span class="tl-time">Session 1 &middot; 1 Jul</span></div>
+                    <div>
+                        <p class="tl-quote">ok so this game is supposed to be more of learning than challenging/testing, so the cords should be in different sections, I shouldn't move from playing simple triads immediately into sus and 9ths. I should be able to select from a menu which voicings I would like to practice. If I fail a certain chord, the game should rewind a little bit, tell me the chord tones, ask me if I'm ready to continue and then continue on click. also the game shouldn't start immediately I launch the file, that's weird.</p>
+                        <p class="tl-effect">
+                            <b>The message that rewrote the product.</b> Four separate corrections,
+                            each one invalidating something that was already built and working:
+                            the difficulty model, the chord ordering, the failure state and the
+                            launch behaviour. None of it was a bug. It was all delivered exactly as
+                            asked, and it was the wrong game &mdash; the sort of judgement no test
+                            suite makes for you. Everything in
+                            <a href="#teaching">section 03</a> comes
+                            from these four sentences.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="tl-item">
+                    <div class="tl-meta"><span class="tl-num">05</span><span class="tl-time">Session 3 &middot; 1 Jul</span></div>
+                    <div>
+                        <p class="tl-quote">the game looks really good so far. however, many of the buttons are poorly positioned, covering other important information on the screen. fix that. Also include a stop button that someone can just click to stop playing.</p>
+                        <p class="tl-effect">
+                            <b>A rendering-order bug, reported as a layout complaint.</b> The real
+                            buttons are operating-system widgets living on top of a canvas the game
+                            paints every frame; both were using the same strip of screen, and the
+                            widgets always win. The fix was to reserve a real toolbar at the top,
+                            paint the heads-up display below it, and add a minimum window size so
+                            the two regions can never be squeezed back into each other.
+                        </p>
+                    </div>
+                </li>
+
+                <li class="tl-item">
+                    <div class="tl-meta"><span class="tl-num">06</span><span class="tl-time">Session 4 &middot; 6 Jul</span></div>
+                    <div>
+                        <p class="tl-quote">package/repackage the game so that I can install it onto another laptop using just a set up file</p>
+                        <p class="tl-effect">
+                            <b>One sentence, and by far the longest session.</b> "Just a setup file"
+                            is a complete requirements document &mdash; one artefact, no
+                            prerequisites, no instructions &mdash; and meeting it took two dead
+                            ends and a setup program written from scratch. The follow-up
+                            questions were the right ones to ask and are answered in
+                            <a href="#shipping">section 07</a>: what
+                            exactly does the other laptop need, and what happens when Windows
+                            distrusts an unsigned file.
+                        </p>
+                    </div>
+                </li>
+            </ol>
+
+            <div class="attribution">
+                <div>
+                    <h3>What I decided</h3>
+                    <ul>
+                        <li>The premise: hurdles cleared by playing an instrument, not by pressing a key</li>
+                        <li>That it was a teaching tool rather than a test &mdash; and that this made the failure state, the difficulty ramp and the launch flow all wrong</li>
+                        <li>That the player picks which voicings to drill, because triads before sus chords is not a matter of survival time</li>
+                        <li>That silence was a defect, and that a Yamaha-style band was the specific fix</li>
+                        <li>That the finished thing had to install on someone else's laptop from one file, with nothing else to install first</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>What the agent did</h3>
+                    <ul>
+                        <li>Wrote the JUCE application: chord bank, matcher, game loop, synth, rendering and UI</li>
+                        <li>Turned the arranger-keyboard reference into a step sequencer with four styles and register-constrained voicings</li>
+                        <li>Rebuilt the flow around <code>PracticeState</code> and the teaching pause when the brief changed</li>
+                        <li>Diagnosed the stale CMake cache, the missing executable and the IExpress failure below</li>
+                        <li>Built the installer and ran the install-then-uninstall verification on a real machine</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================= WHAT BROKE ====== -->
+        <section class="section" id="build-problems">
+            <div class="section-head">
+                <p class="section-label"><span>11</span><span>What broke</span></p>
+                <h2>Five failures worth <em>writing down.</em></h2>
+                <p>
+                    None of these are in the source, so they are invisible to anyone reading the
+                    repository. They are most of where the time actually went.
+                </p>
+            </div>
+
+            <div class="decisions">
+                <div class="decision">
+                    <div>
+                        <span class="tag">Build system</span>
+                        <h3>Moving the project folder broke the build, and the error blamed the wrong thing</h3>
+                    </div>
+                    <p>
+                        CMake writes the absolute path of its build directory into its cache, so
+                        after the project moved out of OneDrive every build failed with a complaint
+                        about a directory that no longer existed.
+                        <span class="why">The fix is not to edit the cache but to abandon it:</span>
+                        rename the old build folder, configure fresh, and point <code>JUCE_DIR</code>
+                        at the JUCE checkout still sitting inside the old one so the framework did
+                        not have to be downloaded again.
+                    </p>
+                </div>
+
+                <div class="decision">
+                    <div>
+                        <span class="tag">Toolchain</span>
+                        <h3>"There's nothing in the Release folder" &mdash; and there wasn't</h3>
+                    </div>
+                    <p>
+                        JUCE does not put the finished application where CMake normally would; it
+                        goes into a nested <code>artefacts</code> directory whose path nobody guesses
+                        on the first try. <span class="why">Rather than document where the file
+                        hides, the build was changed to put it somewhere obvious:</span> a top-level
+                        <code>dist/&lt;config&gt;/</code> folder set by
+                        <code>RUNTIME_OUTPUT_DIRECTORY</code>. Being unable to find the thing you
+                        just built is a real defect, and it is fixed in the build script, not in a
+                        README.
+                    </p>
+                </div>
+
+                <div class="decision">
+                    <div>
+                        <span class="tag">Packaging</span>
+                        <h3>IExpress failed with exit code 1 and no message</h3>
+                    </div>
+                    <p>
+                        Windows' built-in packager produced its intermediate cabinet recipe and then
+                        stopped, silently. Reading that generated file showed an empty output
+                        directory, which <code>makecab</code> rejects; the documented option to embed
+                        the payload instead changed nothing, and the binary contained no useful
+                        strings. <span class="why">The decision that mattered was to stop
+                        debugging a legacy tool and spend the same time writing a 90-line
+                        replacement</span> &mdash; which then worked first time and is far easier
+                        to reason about than the thing it replaced.
+                    </p>
+                </div>
+
+                <div class="decision">
+                    <div>
+                        <span class="tag">Environment</span>
+                        <h3>The agent could not find the project, twice</h3>
+                    </div>
+                    <p>
+                        Two sessions opened with the tool searching the disk for its own workspace:
+                        the recorded project path still pointed into OneDrive while the real folder
+                        had moved to Documents. <span class="why">Both sessions burned real time on
+                        this before touching any code.</span> It is the least glamorous entry here
+                        and probably the most useful &mdash; an agent's picture of your machine is
+                        just another cache, and it goes stale exactly like CMake's did.
+                    </p>
+                </div>
+
+                <div class="decision">
+                    <div>
+                        <span class="tag">Verification</span>
+                        <h3>The first installer test passed the wrong thing</h3>
+                    </div>
+                    <p>
+                        The smoke test launched the setup file and immediately checked for installed
+                        files. They were not there &mdash; not because the install failed, but
+                        because Windows does not make the shell wait for a GUI process, so the
+                        assertions ran while the installer was still copying.
+                        <span class="why">A test that races the thing it is testing will report both
+                        false failures and false passes;</span> re-running it with an explicit wait
+                        turned it into an actual verification.
+                    </p>
+                </div>
+            </div>
+
+            <div class="doc-block" style="margin-top:34px">
+                <h3>The full session logs</h3>
+                <p>
+                    All four development sessions are published in one PDF, in the order the work
+                    happened, including the two that open with the agent unable to find the project
+                    and the long unhappy middle of the packaging session. They are published rather
+                    than summarised because a process write-up that only shows the good decisions
+                    is not evidence of anything.
+                </p>
+                <p>
+                    One edit was made before publishing: absolute Windows paths containing a local
+                    user profile name are shown as <code>&lt;project folder&gt;</code>, and internal
+                    thread identifiers are removed. Nothing has been reworded or cut.
+                </p>
+                <p style="margin-bottom:0">
+                    <a class="btn btn-primary" href="../assets/docs/gospel-chord-hurdles-session-transcripts.pdf">
+                        Read the full transcripts (PDF) <span class="arrow" aria-hidden="true">&rarr;</span>
+                    </a>
+                </p>
+            </div>
+        </section>
+
+        <!-- ==================================================== NEXT ===== -->
+        <section class="section">
+            <div class="next-project">
+                <div>
+                    <p class="eyebrow"><span class="pulse" aria-hidden="true"></span> Keep reading</p>
+                    <h2>More projects &amp; write-ups</h2>
+                </div>
+                <a class="btn btn-primary" href="../index.html#work">
+                    Back to all work <span class="arrow" aria-hidden="true">&rarr;</span>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p class="eyebrow footer-kicker">Questions about this project?</p>
+        <a class="footer-email" href="mailto:jahereza@ou.edu">jahereza@ou.edu <span class="arrow" aria-hidden="true">&nearr;</span></a>
+        <div class="footer-bottom">
+            <span>Joel Ahereza &middot; Computer Engineering &middot; 2026</span>
+            <div class="footer-links">
+                <a href="https://github.com/98Joel">GitHub</a>
+                <a href="../index.html">Work</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../assets/js/media.js?v=10"></script>
+    <script>
+        /* ------------------------------------------------------------------
+           BUILD LOG — add a recording by filling in `src`.
+           Drop the file in assets/media/gospel-chord-hurdles/ and point at it:
+
+             { type: 'video',
+               src: '../assets/media/gospel-chord-hurdles/full-run.mp4',
+               poster: '../assets/media/gospel-chord-hurdles/full-run.jpg',
+               title: '...', caption: '...', duration: '2:10' }
+
+           Leave `src` empty and the card renders as a reserved slot.
+           Types: 'video' | 'timelapse' | 'image' | 'diagram'
+        ------------------------------------------------------------------ */
+        const GOSPEL_MEDIA = [
+            {
+                type: 'video',
+                src: '',
+                poster: '',
+                title: 'Full run on a MIDI keyboard',
+                caption: 'Triads through to 6/9 voicings, played on real hardware — hurdles clearing, the band following the chords, and a deliberate miss to show the teaching pause.',
+                duration: ''
+            },
+            {
+                type: 'video',
+                src: '',
+                poster: '',
+                title: 'The teaching pause, close up',
+                caption: 'Missing a chord on purpose: the hurdle backs up, the band stops, the chord tones appear, and the same chord comes round again.',
+                duration: ''
+            },
+            {
+                type: 'video',
+                src: '',
+                poster: '',
+                title: 'All four band styles over one chord',
+                caption: 'Slow 6/8, Worship Pad, Shout and Neo Soul on the same held voicing, to show what the style table alone changes.',
+                duration: ''
+            },
+            {
+                type: 'image',
+                src: '',
+                poster: '',
+                title: 'Setup file on a clean laptop',
+                caption: 'The unsigned installer meeting Windows SmartScreen, then the per-user install and the shortcuts it creates.',
+                duration: ''
+            }
+        ];
+
+        renderMedia('build-log-grid', GOSPEL_MEDIA);
+    </script>
+    <script src="../assets/js/gospel-chords.js?v=10"></script>
+</body>
+</html>

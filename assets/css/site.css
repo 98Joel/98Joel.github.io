@@ -1,0 +1,570 @@
+/* ============================================================================
+   site.css — shared design system
+   Two neutrals + one accent. Restrained on purpose: the work is the color.
+
+   The look is meant to read as instrumentation, not editorial: cool graphite
+   and slate rather than warm paper, a technical blue rather than a soft teal,
+   hairline rules and small monospace labels everywhere a value is being
+   reported. There is deliberately no serif face in the stack — emphasis is
+   carried by colour and by the monospace, never by an italic flourish.
+   ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Surfaces */
+    --ink:        #0d1117;
+    --ink-2:      #161c24;
+    --ink-3:      #28323d;
+    --deep:       #14202c;    /* the second dark surface, a shade bluer */
+    --paper:      #eef1f4;
+    --paper-2:    #e2e7ec;
+    --line:       rgba(13, 17, 23, .14);
+    --line-dark:  rgba(230, 236, 242, .16);
+
+    /* Text — every value below is AA or better on its intended surface */
+    --text:        #0d1117;
+    --text-muted:  #53606b;   /* 5.7:1 on paper */
+    --text-dim:    #616c76;   /* 4.7:1 on paper */
+    --on-dark:     #e6ecf2;
+    --on-dark-mut: #9fb0c0;   /* 8.5:1 on ink, 7.4:1 on deep */
+    --deep-mut:    #b8c8d6;   /* body text on --deep, 9.6:1 */
+
+    /* Accent */
+    --accent:      #5ab6f5;   /* 8.5:1 on ink — dark surfaces */
+    --accent-ink:  #0e6b9c;   /* 5.1:1 on paper — safe for text/links */
+    --accent-soft: rgba(90, 182, 245, .14);
+    --on-accent:   #04121c;   /* text sitting on a filled accent block */
+
+    /* Leading. Four values, and every rule picks one of them — nothing gets a
+       bespoke 1.65 / 1.68 / 1.75. The rule of thumb: the longer the line, the
+       more air it needs, so running prose is loosest and single-line UI
+       labels are tightest.
+
+         display  h1, h2, and any number set large
+         heading  h3, h4, sub-heads, pull-quotes — short but they can wrap
+         ui       one- or two-line labels, meta, table cells, buttons
+         prose    running body copy at any size */
+    --lh-display: 1.1;
+    --lh-heading: 1.4;
+    --lh-ui:      1.6;
+    --lh-prose:   1.7;
+
+    /* Vertical rhythm: every margin, padding and gap is a multiple of 4px —
+       4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96. Inside a
+       control (button padding, chip padding, icon gaps) a half-step of 6, 10
+       or 14 is allowed, because those are sized to a tap target rather than
+       to the page grid. 1–3px only ever means a hairline or an optical nudge.
+       Nothing else. It is the reason blocks line up down the page. */
+
+    --radius:    10px;
+    --radius-sm: 6px;
+
+    /* One gutter drives everything. --shell is the centred content column;
+       --bleed-pad is the inset a full-bleed section pads itself by. They
+       resolve to the same left edge at every width, which is what keeps the
+       light sections, the dark sections and the footer lined up. Previously
+       these were two separate hard-coded numbers and drifted apart below
+       940px. Change --gutter alone to move all of them. */
+    --gutter:    32px;
+    --measure:   1280px;
+    --shell:     min(var(--measure), calc(100% - (var(--gutter) * 2)));
+    --bleed-pad: max(var(--gutter), calc((100% - var(--measure)) / 2));
+
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* The header is sticky, so an anchor jump has to stop short of it or the
+   heading you asked for lands underneath the nav bar. */
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 96px;
+}
+
+body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: var(--lh-ui);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+img, video, canvas { max-width: 100%; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+h1, h2, h3, h4, p, ul, ol, figure { margin-top: 0; }
+
+/* h3 used to share the display leading with h1/h2. At 17–21px that is far too
+   tight the moment a heading wraps to a second line, which most of the
+   sub-heads on the case studies do. */
+h1, h2 { line-height: var(--lh-display); letter-spacing: -.025em; }
+h3, h4 { line-height: var(--lh-heading); letter-spacing: -.02em; }
+
+/* <em> in a heading is the one emphasis device on the site. It used to be a
+   serif italic, which read as editorial; it is now the same face in the
+   accent colour, so the stress is a highlight rather than a flourish. */
+em { font-style: normal; }
+h1 em, h2 em, h3 em { color: var(--accent-ink); }
+.dark-section :is(h1, h2, h3) em,
+.deep-section :is(h1, h2, h3) em { color: var(--accent); }
+
+/* Focus: one consistent, unmissable ring everywhere. */
+:focus-visible {
+    outline: 3px solid var(--accent-ink);
+    outline-offset: 3px;
+    border-radius: 3px;
+}
+.on-dark :focus-visible,
+.dark-section :focus-visible,
+.deep-section :focus-visible,
+.hero-card :focus-visible,
+.site-footer :focus-visible { outline-color: var(--accent); }
+
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 16px;
+    z-index: 99;
+    padding: 12px 20px;
+    background: var(--ink);
+    color: var(--on-dark);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+}
+.skip-link:focus { top: 0; }
+
+/* Visible to screen readers, not to sighted users. */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Inline code inside prose. */
+code {
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--paper-2);
+    font-family: var(--mono);
+    font-size: .88em;
+}
+.dark-section code,
+.deep-section code { background: rgba(230, 236, 242, .12); color: var(--on-dark); }
+.code code { padding: 0; background: none; }
+
+/* ---------------------------------------------------------------- type --- */
+
+.eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+}
+.dark-section .eyebrow,
+.deep-section .eyebrow,
+.hero-card .eyebrow,
+.site-footer .eyebrow { color: var(--accent); }
+
+/* A square, not a dot: the same status-light idea, without the soft edge. */
+.pulse {
+    width: 7px;
+    height: 7px;
+    border-radius: 1px;
+    background: var(--accent-ink);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+    flex: none;
+}
+.dark-section .pulse,
+.deep-section .pulse { background: var(--accent); }
+
+.lede { font-size: 18px; line-height: var(--lh-prose); color: var(--text-muted); }
+
+.section-label {
+    display: flex;
+    gap: 12px;
+    margin: 0 0 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+.section-label span:first-child { color: var(--accent-ink); }
+.dark-section .section-label,
+.deep-section .section-label { color: var(--on-dark-mut); }
+.dark-section .section-label span:first-child,
+.deep-section .section-label span:first-child { color: var(--accent); }
+
+/* ------------------------------------------------------------- buttons --- */
+/* Buttons always read as buttons: solid fill or a real 1px border, never bare
+   text. Primary is the only filled-dark element in any given block. */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .01em;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background .18s ease, color .18s ease,
+                border-color .18s ease, transform .18s ease;
+}
+.btn-primary { background: var(--ink); color: var(--on-dark); border-color: var(--ink); }
+.btn-primary:hover { background: #1d2733; border-color: #1d2733; transform: translateY(-2px); }
+.btn-primary .arrow { color: var(--accent); }
+
+.btn-secondary { background: transparent; color: var(--text); border-color: rgba(13, 17, 23, .3); }
+.btn-secondary:hover { background: var(--paper-2); border-color: var(--text); transform: translateY(-2px); }
+
+.dark-section .btn-primary,
+.deep-section .btn-primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.dark-section .btn-primary:hover,
+.deep-section .btn-primary:hover { background: #85caf8; border-color: #85caf8; }
+.dark-section .btn-primary .arrow,
+.deep-section .btn-primary .arrow { color: var(--on-accent); }
+.dark-section .btn-secondary,
+.deep-section .btn-secondary { color: var(--on-dark); border-color: rgba(230, 236, 242, .34); }
+.dark-section .btn-secondary:hover,
+.deep-section .btn-secondary:hover { background: rgba(230, 236, 242, .1); border-color: var(--on-dark); }
+
+.arrow { font-size: 15px; line-height: 1; }
+
+/* --------------------------------------------------------------- header --- */
+
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: rgba(238, 241, 244, .88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+}
+.header-inner {
+    width: var(--shell);
+    margin: auto;
+    min-height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+.wordmark {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.wordmark .dot { color: var(--accent-ink); }
+
+.site-nav { display: flex; gap: 28px; }
+.site-nav a {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: .04em;
+    text-decoration: none;
+    color: var(--text-muted);
+    padding: 6px 0;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color .18s ease, border-color .18s ease;
+}
+.site-nav a:hover { color: var(--text); border-color: var(--accent-ink); }
+.site-nav a[aria-current="page"] { color: var(--text); border-color: var(--accent-ink); }
+
+.header-cta {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: .04em;
+    text-decoration: none;
+    padding: 8px 12px;
+    border: 1px solid rgba(13, 17, 23, .28);
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    transition: background .18s ease, border-color .18s ease;
+}
+.header-cta:hover { background: var(--paper-2); border-color: var(--text); }
+
+/* ----------------------------------------------------------- home page --- */
+
+/* align-items:start, not center: the card's top rule and the hero eyebrow sit
+   on the same line, which is the alignment a reader actually notices. */
+.home-hero {
+    width: var(--shell);
+    margin: auto;
+    padding: 84px 0 76px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+    gap: 64px;
+    align-items: start;
+}
+.home-hero h1 {
+    margin: 20px 0 24px;
+    font-size: clamp(42px, 5.4vw, 76px);
+    font-weight: 700;
+    letter-spacing: -.04em;
+}
+/* The 20px above is the gap under an eyebrow. With no eyebrow the heading is
+   the first thing in the column, and that margin just pushes it 20px out of
+   line with the top of the card beside it. */
+.home-hero h1:first-child { margin-top: 0; }
+.home-hero .lede { max-width: 520px; margin-bottom: 32px; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+
+.hero-card {
+    padding: 24px;
+    border-radius: var(--radius);
+    background:
+        linear-gradient(rgba(90, 182, 245, .09) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(90, 182, 245, .09) 1px, transparent 1px),
+        var(--ink);
+    background-size: 28px 28px, 28px 28px, auto;
+    color: var(--on-dark);
+    border: 1px solid var(--ink-3);
+    box-shadow: 0 24px 50px rgba(13, 17, 23, .18);
+}
+/* Hairline rules rather than gaps, so the four facts read as a spec table
+   and not as four items floating on the card. */
+.hero-card dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 24px 0 0;
+    border-top: 1px solid var(--line-dark);
+}
+.hero-card dl > div {
+    padding: 16px 0 16px 16px;
+    border-bottom: 1px solid var(--line-dark);
+    border-left: 1px solid var(--line-dark);
+}
+.hero-card dl > div:nth-child(odd) { padding-left: 0; border-left: 0; }
+.hero-card dt {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--on-dark-mut);
+    margin-bottom: 6px;
+}
+.hero-card dd { margin: 0; font-size: 14px; font-weight: 600; }
+.hero-card dd a { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(90, 182, 245, .4); }
+.hero-card dd a:hover { border-bottom-color: var(--accent); }
+
+/* Project grid */
+.work-section { width: var(--shell); margin: auto; padding: 32px 0 100px; }
+.work-section.is-tight { padding-top: 0; }
+.work-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 40px;
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--line);
+}
+.work-head h2 { margin: 12px 0 0; font-size: clamp(28px, 3.2vw, 40px); font-weight: 700; }
+.work-head p { margin: 0 0 4px; max-width: 380px; font-size: 14px; color: var(--text-muted); }
+
+/* Two-up head: the 4px above is an optical nudge that sits the paragraph's
+   last line on the heading's baseline. Stacked head (everything in one
+   column): that nudge is wrong — the paragraph needs real air under the
+   heading instead, and a wider measure since it is no longer in a column. */
+.work-head > :only-child > p:not(.eyebrow) { margin: 16px 0 0; max-width: 68ch; }
+
+/* The About columns used to be an inline grid with no breakpoint, so they
+   stayed side by side and squeezed on a phone. */
+.about-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 56px; }
+.about-grid .lede { margin: 0; }
+
+.project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 24px; }
+
+.project-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.project-card.is-live:hover {
+    transform: translateY(-4px);
+    border-color: rgba(13, 17, 23, .3);
+    box-shadow: 0 18px 38px rgba(13, 17, 23, .12);
+}
+.project-card.is-draft { background: transparent; border-style: dashed; }
+
+.card-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 20px; }
+.card-index { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; color: var(--text-dim); }
+
+.badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.badge-live  { background: var(--ink); color: var(--accent); }
+.badge-draft { background: transparent; color: var(--text-muted); border: 1px solid var(--line); }
+
+.project-card h3 { margin: 0 0 12px; font-size: 24px; font-weight: 700; letter-spacing: -.03em; }
+.project-card .card-role {
+    display: block;
+    margin-bottom: 16px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+}
+.project-card p { margin: 0 0 24px; font-size: 14.5px; line-height: var(--lh-prose); color: var(--text-muted); }
+
+.card-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: auto 0 0;
+    padding: 20px 0 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+}
+.chip {
+    padding: 6px 10px;
+    border-radius: 5px;
+    background: var(--paper-2);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--text-muted);
+}
+/* The transition belongs on the element that owns the `gap`, not on its
+   child — on the child it animated nothing. */
+.card-go {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    transition: gap .2s ease;
+}
+.project-card.is-live:hover .card-go { gap: 14px; }
+
+/* --------------------------------------------------------------- footer --- */
+
+.site-footer {
+    padding: 80px var(--bleed-pad) 28px;
+    background: var(--ink);
+    color: var(--on-dark);
+}
+.footer-kicker { margin-bottom: 16px; color: var(--accent); }
+.footer-email {
+    display: inline-block;
+    margin-bottom: 72px;
+    font-size: clamp(28px, 4.4vw, 62px);
+    font-weight: 700;
+    line-height: var(--lh-display);
+    letter-spacing: -.045em;
+    text-decoration: none;
+    transition: color .2s ease;
+}
+.footer-email:hover { color: var(--accent); }
+.footer-email .arrow { color: var(--accent); font-size: .65em; }
+.footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: space-between;
+    padding-top: 20px;
+    border-top: 1px solid var(--line-dark);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--on-dark-mut);
+}
+.footer-links { display: flex; gap: 20px; }
+.footer-links a { text-decoration: none; }
+.footer-links a:hover { color: var(--accent); }
+
+/* -------------------------------------------------------------- responsive */
+
+/* Only --gutter changes below. Everything that used to hard-code its own
+   32px/44px inset now derives from it, so the light sections, the dark
+   sections and the footer keep the same left edge at every width. */
+@media (max-width: 940px) {
+    /* The header wraps to two rows here, so anchors need to stop lower. */
+    :root { --gutter: 24px; }
+    html { scroll-padding-top: 128px; }
+    .home-hero { grid-template-columns: minmax(0, 1fr); gap: 40px; padding: 56px 0 60px; }
+    .about-grid { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+    .work-head { display: block; }
+    .work-head p { margin: 16px 0 0; max-width: none; }
+
+    /* The nav used to disappear entirely below this width. It now scrolls
+       sideways instead, so a phone still has a way to reach the case studies. */
+    .header-inner { flex-wrap: wrap; gap: 12px 20px; padding: 16px 0; }
+    .site-nav {
+        order: 3;
+        width: 100%;
+        gap: 20px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+        scrollbar-width: none;
+    }
+    .site-nav::-webkit-scrollbar { display: none; }
+}
+
+@media (max-width: 560px) {
+    :root { --gutter: 18px; }
+    .home-hero { padding: 40px 0 48px; }
+    .hero-card { padding: 20px; }
+    .hero-card dl { grid-template-columns: minmax(0, 1fr); }
+    .hero-card dl > div { padding: 12px 0; border-left: 0; }
+    .project-grid { grid-template-columns: 1fr; }
+    .footer-email { margin-bottom: 48px; }
+    .footer-bottom { flex-direction: column; gap: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+    }
+}

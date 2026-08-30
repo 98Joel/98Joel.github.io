@@ -1,0 +1,29 @@
+# This repo is served by GitHub Pages — only ship the website itself.
+# Application source belongs in its own repo, not inside the portfolio.
+
+# Source folders accidentally copied in (these carry their own .git,
+# a .venv, and built .exe files — committing them breaks Pages and
+# bloats the repo).
+Play along Project/
+playalong/
+key-shifter/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Large media staged locally but not ready to publish
+assets/media/**/*.tmp
